@@ -138,8 +138,6 @@ Proof. simpl. reflexivity.  Qed.
     them in a bit), but essentially this can be read as "The assertion
     we've just made can be proved by observing that both sides of the
     equality evaluate to the same thing, after some simplification."
-
-    Third, we can ask Coq to _extract_, from our [Definition], a
     program in some other, more conventional, programming
     language (OCaml, Scheme, or Haskell) with a high-performance
     compiler.  This facility is very interesting, since it gives us a
@@ -258,36 +256,57 @@ Proof. simpl. reflexivity. Qed.
     should return [true] if either or both of its inputs are
     [false]. *)
 
-Definition nandb (b1:bool) (b2:bool) : bool
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition nandb (b1:bool) (b2:bool) : bool :=
+  match b1 with
+  | true => negb b2
+  | false => true
+  end.
+
+
+          
 
 Example test_nandb1:               (nandb true false) = true.
-(* FILL IN HERE *) Admitted.
+Proof. simpl. reflexivity. Qed.
+
 Example test_nandb2:               (nandb false false) = true.
-(* FILL IN HERE *) Admitted.
+Proof. simpl. reflexivity. Qed.
+
 Example test_nandb3:               (nandb false true) = true.
-(* FILL IN HERE *) Admitted.
+Proof. simpl. reflexivity. Qed.
+
 Example test_nandb4:               (nandb true true) = false.
-(* FILL IN HERE *) Admitted.
-(** [] *)
+Proof. simpl. reflexivity. Qed.
+
+(** [x] *)
 
 (** **** Exercise: 1 star (andb3)  *)
 (** Do the same for the [andb3] function below. This function should
     return [true] when all of its inputs are [true], and [false]
     otherwise. *)
 
-Definition andb3 (b1:bool) (b2:bool) (b3:bool) : bool
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition andb3 (b1:bool) (b2:bool) (b3:bool) : bool :=
+  match b1 with
+  | false => false
+  | true => match b2 with
+    | false => false
+    | true => b3
+    end
+  end.
+
 
 Example test_andb31:                 (andb3 true true true) = true.
-(* FILL IN HERE *) Admitted.
+Proof. simpl. reflexivity. Qed.
+
 Example test_andb32:                 (andb3 false true true) = false.
-(* FILL IN HERE *) Admitted.
+Proof. simpl. reflexivity. Qed.
+
 Example test_andb33:                 (andb3 true false true) = false.
-(* FILL IN HERE *) Admitted.
+Proof. simpl. reflexivity. Qed.
+
 Example test_andb34:                 (andb3 true true false) = false.
-(* FILL IN HERE *) Admitted.
-(** [] *)
+Proof. simpl. reflexivity. Qed.
+
+(** [x] *)
 
 (* ================================================================= *)
 (** ** Function Types *)
@@ -464,6 +483,7 @@ Definition pred (n : nat) : nat :=
     | S n' => n'
   end.
 
+
 (** The second branch can be read: "if [n] has the form [S n']
     for some [n'], then return [n']."  *)
 
@@ -610,14 +630,21 @@ Fixpoint exp (base power : nat) : nat :=
 
     Translate this into Coq. *)
 
-Fixpoint factorial (n:nat) : nat
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Fixpoint factorial (n:nat) : nat :=
+  match n with
+  | O => 1
+  | S n' => mult n (factorial n')
+  end.
+
+
 
 Example test_factorial1:          (factorial 3) = 6.
-(* FILL IN HERE *) Admitted.
+Proof. simpl. reflexivity. Qed.
+
 Example test_factorial2:          (factorial 5) = (mult 10 12).
-(* FILL IN HERE *) Admitted.
-(** [] *)
+Proof. simpl. reflexivity. Qed.
+
+(** [x] *)
 
 (** We can make numerical expressions a little easier to read and
     write by introducing _notations_ for addition, multiplication, and
@@ -690,16 +717,22 @@ Proof. simpl. reflexivity.  Qed.
     yielding a [b]oolean.  Instead of making up a new [Fixpoint] for
     this one, define it in terms of a previously defined function. *)
 
-Definition blt_nat (n m : nat) : bool
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition blt_nat (n m : nat) : bool :=
+  match (beq_nat n m) with
+  | true => false
+  | false => leb n m
+  end.
 
 Example test_blt_nat1:             (blt_nat 2 2) = false.
-(* FILL IN HERE *) Admitted.
+Proof. simpl. reflexivity.  Qed.
+
 Example test_blt_nat2:             (blt_nat 2 4) = true.
-(* FILL IN HERE *) Admitted.
+Proof. simpl. reflexivity.  Qed.
+
 Example test_blt_nat3:             (blt_nat 4 2) = false.
-(* FILL IN HERE *) Admitted.
-(** [] *)
+Proof. simpl. reflexivity.  Qed.
+
+(** [x] *)
 
 (* ################################################################# *)
 (** * Proof by Simplification *)
@@ -847,10 +880,18 @@ Proof.
 (** Remove "[Admitted.]" and fill in the proof. *)
 
 Theorem plus_id_exercise : forall n m o : nat,
-  n = m -> m = o -> n + m = m + o.
+    n = m -> m = o -> n + m = m + o.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros n m o.
+  intros H.
+  rewrite -> H.
+  intros H'.
+  rewrite -> H'.
+  reflexivity.
+Qed.
+
+
+(** [x] *)
 
 (** The [Admitted] command tells Coq that we want to skip trying
     to prove this theorem and just accept it as a given.  This can be
@@ -881,11 +922,17 @@ Theorem mult_S_1 : forall n m : nat,
   m = S n ->
   m * (1 + n) = m * m.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m.
+  intros H.
+  rewrite -> H.
+  rewrite <- plus_1_l.
+  reflexivity.
+Qed.  
 
   (* (N.b. This proof can actually be completed without using [rewrite],
      but please do use [rewrite] for the sake of the exercise.) *)
-(** [] *)
+
+(** [x] *)
 
 (* ################################################################# *)
 (** * Proof by Case Analysis *)
@@ -1092,18 +1139,48 @@ Qed.
 (** Prove the following claim, marking cases (and subcases) with
     bullets when you use [destruct]. *)
 
+
+Lemma false_r : forall b : bool,
+    b && false = false.
+Proof. 
+  intros [].
+  - reflexivity.
+  - reflexivity.
+Qed.
+
+Lemma false_l : forall b : bool,
+    false && b = false.
+Proof. 
+  intros [].
+  - reflexivity.
+  - reflexivity.
+Qed.
+
 Theorem andb_true_elim2 : forall b c : bool,
-  andb b c = true -> c = true.
+    andb b c = true -> c = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros b c.
+  intros H.
+  destruct c.
+  - reflexivity.
+  - rewrite <- H.
+    simpl.
+    rewrite -> false_r.
+    reflexivity.
+Qed.
+
+(** [x] *)
 
 (** **** Exercise: 1 star (zero_nbeq_plus_1)  *)
 Theorem zero_nbeq_plus_1 : forall n : nat,
   beq_nat 0 (n + 1) = false.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros [|n].
+  - reflexivity.
+  - reflexivity.
+Qed.
+
+(** [x] *)
 
 (* ================================================================= *)
 (** ** More on Notation (Optional) *)
@@ -1183,7 +1260,7 @@ Fixpoint plus' (n : nat) (m : nat) : nat :=
     _does_ terminate on all inputs, but that Coq will reject because
     of this restriction. *)
 
-(* FILL IN HERE *)
+
 (** [] *)
 
 (* ################################################################# *)
@@ -1198,14 +1275,30 @@ Theorem identity_fn_applied_twice :
   (forall (x : bool), f x = x) ->
   forall (b : bool), f (f b) = b.
 Proof.
-  (* FILL IN HERE *) Admitted.
-
+  intros f.
+  intros H.
+  intros [].
+  - rewrite -> H. apply H.
+  - rewrite -> H. apply H.
+Qed.
+       
 (** Now state and prove a theorem [negation_fn_applied_twice] similar
     to the previous one but where the second hypothesis says that the
     function [f] has the property that [f x = negb x].*)
 
+Theorem negation_fn_applied_twice :
+  forall (f : bool -> bool),
+  (forall (x : bool), f x = negb x) ->
+  forall (b : bool), f (f b) = b.
+Proof.
+  intros f. intros H. intros [].
+  - rewrite H. rewrite H. apply negb_involutive.
+  - rewrite H. rewrite H. apply negb_involutive.
+Qed.
+
+
 (* FILL IN HERE *)
-(** [] *)
+(** [x] *)
 
 (** **** Exercise: 3 stars, optional (andb_eq_orb)  *)
 (** Prove the following theorem.  (Hint: This one can be a bit tricky,
@@ -1213,14 +1306,30 @@ Proof.
     [destruct] and [rewrite], but destructing everything in sight is
     not the best way.) *)
 
+
+Lemma true_l : forall b : bool,
+    true || b = true.
+Proof. destruct b.
+       - reflexivity.
+       - reflexivity. Qed.
+
 Theorem andb_eq_orb :
   forall (b c : bool),
   (andb b c = orb b c) ->
   b = c.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros b c.
+  destruct b.
+  - rewrite true_l.
+    intros H.
+    rewrite <- H.
+    reflexivity.
+  - rewrite false_l.
+    intros H. rewrite -> H.
+    reflexivity.
+Qed.   
 
-(** [] *)
+(** [x] *)
 
 (** **** Exercise: 3 stars (binary)  *)
 (** Consider a different, more efficient representation of natural
@@ -1250,13 +1359,41 @@ Proof.
 
         One caveat: If you use [O] or [S] as constructor names in your
         definition, it will confuse the auto-grader script in
-        BasicsTest.v.  Please choose different names.
+        BasicsTest.v.  Please choose different names.*)
 
-    (b) Next, write an increment function [incr] for binary numbers,
+Inductive bin : Type :=
+| Zero : bin
+| Double : bin -> bin
+| Plus : bin -> bin.
+
+
+    (**(b) Next, write an increment function [incr] for binary numbers,
         and a function [bin_to_nat] to convert binary numbers to unary
-        numbers.
+        numbers.*)
 
-    (c) Write five unit tests [test_bin_incr1], [test_bin_incr2], etc.
+Fixpoint incr (n : bin) : bin :=
+  match n with
+  | Double n' => Plus n'
+  | Plus n' => Double (incr n')
+  | Zero => Plus Zero
+  end.
+
+Fixpoint bin_to_nat (n : bin) : nat :=
+  match n with
+  | Zero => O
+  | Double n' => 2 * (bin_to_nat n')
+  | Plus n' => 2 * (bin_to_nat n') + 1
+  end.
+
+
+
+Compute bin_to_nat (incr Zero).
+Compute incr Zero.
+
+Compute bin_to_nat (incr (incr Zero)).
+
+
+    (**(c) Write five unit tests [test_bin_incr1], [test_bin_incr2], etc.
         for your increment and binary-to-unary functions.  (A "unit
         test" in Coq is a specific [Example] that can be proved with
         just [reflexivity], as we've done for several of our
@@ -1264,8 +1401,32 @@ Proof.
         then converting it to unary should yield the same result as
         first converting it to unary and then incrementing. *)
 
+Example test_bin_incr0: (bin_to_nat (incr Zero)) = 1.
+Proof. simpl. reflexivity.  Qed.
+
+Example test_bin_incr0': (S (bin_to_nat Zero)) = 1.
+Proof. simpl. reflexivity.  Qed.
+
+Example test_bin_incr1: (bin_to_nat (incr (incr Zero))) = 2.
+Proof. simpl. reflexivity.  Qed.
+
+Example test_bin_incr1': (S (bin_to_nat (incr Zero))) = 2.
+Proof. simpl. reflexivity.  Qed.
+
+Example test_bin_incr2: (bin_to_nat (incr (incr (incr Zero)))) = 3.
+Proof. simpl. reflexivity.  Qed.
+
+Example test_bin_incr3: (bin_to_nat (incr (incr (incr (incr Zero))))) = 4.
+Proof. simpl. reflexivity.  Qed.
+
+Example test_bin_incr4: (bin_to_nat (incr (incr (incr (incr (incr Zero)))))) = 5.
+Proof. simpl. reflexivity.  Qed.
+
+Example test_bin_incr5: (bin_to_nat (incr (incr (incr (incr (incr (incr Zero))))))) = 6.
+Proof. simpl. reflexivity.  Qed.
+
 (* FILL IN HERE *)
-(** [] *)
+(** [x] *)
 
 (** $Date: 2018-01-10 21:47:50 -0500 (Wed, 10 Jan 2018) $ *)
 
